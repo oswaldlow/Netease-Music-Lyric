@@ -56,7 +56,30 @@ while True:
                     merged_lyrics.append(f"[{orig_timestamp}] {orig_lyrics[i].split(']')[-1].strip()}\n")
             for line in merged_lyrics:
                 f3.write(line)
-        print("歌词合并成功，所有歌词已经保持在当前目录下")
-        print(f"当前获取的歌名为：{song_title}")
+        print("歌词合并成功")
+        #beta版本，尝试获取歌曲地址
+        headers = {
+            'Referer': 'https://music.163.com/',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        }
+        url = f'http://music.163.com/api/song/enhance/player/url?ids=[{song_id}]&br=320000'
+        response = requests.get(url, headers=headers)
+        data = json.loads(response.text)
+
+        if data['code'] == 200:
+            song_url = data['data'][0]['url']
+            if song_url is not None:
+                song_title = "test"  # 歌曲名称，自行修改
+                print('歌曲地址:', song_url)
+                # 下载歌曲
+                try:
+                    response = requests.get(song_url)
+                    with open(f"{song_title}.mp3", "wb") as f:
+                        f.write(response.content)
+                        print(f"歌曲 {song_title}.mp3 已下载成功")
+                except:
+                    print("歌曲下载失败")
+            else:
+                print('歌词提取成功，该歌曲有版权限制或者当前的网络环境为国外，无法下载')
     except:
-        print("获取歌词错误，请检查你的网络/歌词id再来重试。也可能是请求过频繁，请稍后再试")
+        print("保存歌词错误，请检查你的网络/歌词id再来重试。")
